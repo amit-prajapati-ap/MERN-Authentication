@@ -13,6 +13,6 @@ authRouter.post('/reset-password', resetPassword)
 //Using userAuth Middleware
 authRouter.post('/verification-otp', userAuth, sendVerifyOtp)
 authRouter.post('/verify-email', userAuth, verifyEmail)
-authRouter.post('/is-auth', userAuth, isAuthenticated)
+authRouter.get('/is-auth', userAuth, isAuthenticated)
 
 export default authRouter

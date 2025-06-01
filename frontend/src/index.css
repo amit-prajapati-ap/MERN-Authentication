@@ -4,3 +4,7 @@
 *{
   font-family: "Outfit", sans-serif;
 }
+
+@theme {
+  --background-color-input : #333A5C
+}

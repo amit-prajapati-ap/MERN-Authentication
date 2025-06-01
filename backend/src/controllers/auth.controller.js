@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken'
 import { User } from '../models/user.model.js'
 import transporter from "../config/nodeMailer.config.js";
 
+const isProd = process.env.NODE_ENV === 'production'
+
 const register = async (req, res) => {
     const { name, email, password, confirmPassword } = req.body;
 
@@ -31,10 +33,10 @@ const register = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+            secure: isProd,
+            sameSite: isProd ? "strict" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000
-        }).status(200).json(new ApiResponse(200, { name, email }, "Registered Successfully"))
+        }).status(200).json(new ApiResponse(200, [], "Registered Successfully"))
 
         //Sending register email
         const mailOptions = {
@@ -53,11 +55,11 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-
+    
     if (!email || !password) {
         return res.status(400).json(new ApiError(400, "Email and Password is required"))
     }
-
+    
     try {
         const user = await User.findOne({ email }, {name: 1, email: 1, password: 1}).lean()
         
@@ -77,10 +79,10 @@ const login = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+            secure: isProd,
+            sameSite: isProd ? "strict" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000
-        }).status(200).json(new ApiResponse(200, user, "Login Successfully"))
+        }).status(200).json(new ApiResponse(200, [], "Login Successfully"))
 
         //Sending login email
         const mailOptions = {
@@ -102,8 +104,8 @@ const logout = async (_, res) => {
     try {
         res.clearCookie("token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
+            secure: isProd,
+            sameSite: isProd ? "strict" : "none"
         }).status(200).json(new ApiResponse(200, [], "Logout Successfully"))
 
     } catch (error) {
@@ -190,7 +192,9 @@ const verifyEmail = async(req,res) => {
 
 const isAuthenticated = async(req,res) => {
     try {
-        return res.status(200).json(new ApiResponse(200, [], "User Authenticated"))
+        const userId = req.userId
+        const user = await User.findById(userId).select('-password -resetOtp -verifyOtp -resetOtpExpireAt -verifyOtpExpireAt')
+        return res.status(200).json(new ApiResponse(200, user, "User Authenticated"))
     } catch (error) {
         res.status(500).json(new ApiError(500, "Server error occured while checking the user authenticity", error))
     }
