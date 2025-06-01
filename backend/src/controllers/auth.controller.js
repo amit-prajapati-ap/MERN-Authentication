@@ -115,7 +115,7 @@ const logout = async (_, res) => {
 
 const sendVerifyOtp = async (req,res) => {
     try {
-        const {userId} = req.body
+        const userId = req.userId
         const user = await User.findById(userId)
 
         if (user.isVerified) {
@@ -157,7 +157,8 @@ const sendVerifyOtp = async (req,res) => {
 }
 
 const verifyEmail = async(req,res) => {
-    const {userId, otp} = req.body
+    const {otp} = req.body
+    const userId = req.userId
 
     if (!userId || !otp) {
         return res.status(400).json(new ApiError(400, "Missing Details"))
@@ -249,13 +250,15 @@ const sendResetOtp = async(req,res) => {
 }
 
 const resetPassword = async(req,res) => {
-    const {email, otp, newPassword, confirmNewPassword} = req.body
+    const {email, otp, password, confirmPassword} = req.body
 
-    if (!email || !otp || !newPassword || !confirmNewPassword) {
+    console.log(email, otp, password, confirmPassword)
+
+    if (!email || !otp || !password || !confirmPassword) {
         return res.status(400).json(new ApiError(400, "All fields are required"))
     }
 
-    if (newPassword !== confirmNewPassword) {
+    if (password !== confirmPassword) {
         return res.status(400).json(new ApiError(400, "Password and confirm password should be same"))
     }
 
@@ -274,7 +277,7 @@ const resetPassword = async(req,res) => {
             return res.status(401).json(new ApiError(401, "OTP Expired"))
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        const hashedPassword = await bcrypt.hash(password, 10)
         user.password = hashedPassword
         user.resetOtp = ""
         user.resetOtpExpireAt = 0
