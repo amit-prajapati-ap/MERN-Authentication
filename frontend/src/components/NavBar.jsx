@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { assets } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import { logoutUser, sendVerificationOtp } from "../utils/ApiCalls";
+import { deleteAccount, logoutUser, sendVerificationOtp } from "../utils/ApiCalls";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -11,6 +11,15 @@ export default function NavBar() {
 
   const logout = () => {
     logoutUser({ backendUrl }).then((res) => {
+      if (res) {
+        setUserData(null);
+        setIsLoggedIn(false);
+        navigate("/");
+      }
+    });
+  };
+  const deleteUser = () => {
+    deleteAccount({ backendUrl }).then((res) => {
       if (res) {
         setUserData(null);
         setIsLoggedIn(false);
@@ -44,6 +53,12 @@ export default function NavBar() {
                 className="py-1 px-2 hover:bg-gray-200 cursor-pointer pr-10"
               >
                 Logout
+              </li>
+              <li
+                onClick={deleteUser}
+                className="py-1 px-2 text-white bg-red-500 rounded-sm cursor-pointer pr-10"
+              >
+                Delete
               </li>
             </ul>
           </div>

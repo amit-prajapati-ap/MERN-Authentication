@@ -145,3 +145,21 @@ export const resetPassword = async({backendUrl, otp, email, password, confirmPas
         return false
     }
 }
+
+export const deleteAccount = async({backendUrl}) => {
+    try {
+        axios.defaults.withCredentials = true
+        const {data} = await axios.post(backendUrl + '/api/auth/delete-user')
+    
+        if (data.success) {
+            toast.success(data.message)
+            return true
+        } else {
+            toast.error(data.message)
+            return false
+        }
+    } catch (error) {
+        toast.error(error.response.data.message)
+        return false
+    }
+}

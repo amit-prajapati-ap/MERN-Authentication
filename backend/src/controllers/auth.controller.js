@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { User } from '../models/user.model.js'
 import transporter from "../config/nodeMailer.config.js";
+import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from "../config/email.template.js";
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -133,18 +134,7 @@ const sendVerifyOtp = async (req,res) => {
             from: process.env.SMTP_EMAIL,
             to: user.email,
             subject: 'OTP For Email Verification',
-            text: 
-            `Dear ${user.name},
-
-             Your trust in <your_app> is greatly valued.
-
-             For your ${user.email} verification, please use this One Time Password (OTP): ${otp} with validity of 15 minutes.
-
-             Thank you for your continued partnership.
-
-             Warm Regards,
-             <your_app>
-            `
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email)
         }
 
         await transporter.sendMail(mailOptions)
@@ -226,18 +216,7 @@ const sendResetOtp = async(req,res) => {
             from: process.env.SMTP_EMAIL,
             to: user.email,
             subject: 'OTP For Reset Password',
-            text: 
-            `Dear ${user.name},
-
-             Your trust in <your_app> is greatly valued.
-
-             For reset the password, please use this One Time Password (OTP): ${otp} with validity of 10 minutes.
-
-             Thank you for your continued partnership.
-
-             Warm Regards,
-             <your_app>
-            `
+            html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email)
         }
 
         await transporter.sendMail(mailOptions)
@@ -290,4 +269,21 @@ const resetPassword = async(req,res) => {
     }
 }
 
-export { register, login, logout, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword }
+const deleteAccount = async (req, res) => {
+    try {
+        const userId = req.userId
+
+        await User.findByIdAndDelete(userId)
+
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: isProd ? "strict" : "none"
+        }).status(200).json(new ApiResponse(200, [], "Your Account Deleted Successfully"))
+
+    } catch (error) {
+        res.status(500).json(new ApiError(500, "Server error occured while deleting the account", error))
+    }
+}
+
+export { register, login, logout, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, deleteAccount }
