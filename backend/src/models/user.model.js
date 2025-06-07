@@ -11,8 +11,7 @@ const userSchema = new Schema({
         unique: true
     },
     password: {
-        type: String,
-        required: true
+        type: String
     },
     verifyOtp: {
         type: String,
@@ -34,6 +33,11 @@ const userSchema = new Schema({
         type: Number,
         default: 0,
     },
+    authType: {
+        type: String,
+        enum: ['EMAIL', 'GOOGLE', 'GITHUB', 'MICROSOFT'],
+        default: 'EMAIL'
+    }
 })
 
 export const User = mongoose.models.User || model("User", userSchema)

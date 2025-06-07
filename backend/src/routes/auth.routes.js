@@ -6,9 +6,9 @@ const authRouter = express.Router()
 
 authRouter.post('/register', register)
 authRouter.post('/login', login)
-authRouter.post('/logout', logout)
 authRouter.post('/send-reset-otp', sendResetOtp)
 authRouter.post('/reset-password', resetPassword)
+authRouter.post('/logout', logout)
 
 //Using userAuth Middleware
 authRouter.post('/verification-otp', userAuth, sendVerifyOtp)

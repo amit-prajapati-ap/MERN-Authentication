@@ -56,26 +56,26 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
         return res.status(400).json(new ApiError(400, "Email and Password is required"))
     }
-    
+
     try {
-        const user = await User.findOne({ email }, {name: 1, email: 1, password: 1}).lean()
-        
-        if (!user) {
+        const user = await User.findOne({ email }, { name: 1, email: 1, password: 1, authType: 1 }).lean()
+
+        if (!user || user.authType !== 'EMAIL') {
             return res.status(401).json(new ApiError(401, `Invalid email ID`))
         }
-        
+
         const isMatch = await bcrypt.compare(password, user.password)
-        
+
         if (!isMatch) {
             return res.status(401).json(new ApiError(401, `Invalid Password`))
         }
-        
+
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
-        
+
         delete user.password
 
         res.cookie("token", token, {
@@ -101,20 +101,21 @@ const login = async (req, res) => {
     }
 }
 
-const logout = async (_, res) => {
+const logout = async (req, res) => {
     try {
-        res.clearCookie("token", {
+        res.cookie("token", null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: isProd ? "strict" : "none"
+            sameSite: isProd ? "strict" : "lax"
         }).status(200).json(new ApiResponse(200, [], "Logout Successfully"))
 
     } catch (error) {
+        console.log(error)
         res.status(500).json(new ApiError(500, "Server error occured while logout the user", error))
     }
 }
 
-const sendVerifyOtp = async (req,res) => {
+const sendVerifyOtp = async (req, res) => {
     try {
         const userId = req.userId
         const user = await User.findById(userId)
@@ -146,8 +147,8 @@ const sendVerifyOtp = async (req,res) => {
     }
 }
 
-const verifyEmail = async(req,res) => {
-    const {otp} = req.body
+const verifyEmail = async (req, res) => {
+    const { otp } = req.body
     const userId = req.userId
 
     if (!userId || !otp) {
@@ -175,13 +176,13 @@ const verifyEmail = async(req,res) => {
         await user.save()
 
         res.status(200).json(new ApiResponse(200, [], "Email verified successfully"))
-        
+
     } catch (error) {
         res.status(500).json(new ApiError(500, "Server error occured while verifying the user email ID", error))
     }
 }
 
-const isAuthenticated = async(req,res) => {
+const isAuthenticated = async (req, res) => {
     try {
         const userId = req.userId
         const user = await User.findById(userId).select('-password -resetOtp -verifyOtp -resetOtpExpireAt -verifyOtpExpireAt')
@@ -191,15 +192,15 @@ const isAuthenticated = async(req,res) => {
     }
 }
 
-const sendResetOtp = async(req,res) => {
+const sendResetOtp = async (req, res) => {
     try {
-        const {email} = req.body
+        const { email } = req.body
 
         if (!email) {
             return res.status(400).json(new ApiError(400, "Email is Required"))
         }
 
-        const user = await User.findOne({email})
+        const user = await User.findOne({ email })
 
         if (!user) {
             return res.status(401).json(new ApiError(401, "User Not Found"))
@@ -228,8 +229,8 @@ const sendResetOtp = async(req,res) => {
     }
 }
 
-const resetPassword = async(req,res) => {
-    const {email, otp, password, confirmPassword} = req.body
+const resetPassword = async (req, res) => {
+    const { email, otp, password, confirmPassword } = req.body
 
     console.log(email, otp, password, confirmPassword)
 
@@ -242,13 +243,13 @@ const resetPassword = async(req,res) => {
     }
 
     try {
-        const user = await User.findOne({email})
+        const user = await User.findOne({ email })
 
         if (!user) {
             return res.status(400).json(new ApiError(400, "User not found"))
         }
 
-        if ( user.resetOtp === "" || user.resetOtp !== otp) {
+        if (user.resetOtp === "" || user.resetOtp !== otp) {
             return res.status(401).json(new ApiError(401, "Invalid OTP"))
         }
 
@@ -263,7 +264,7 @@ const resetPassword = async(req,res) => {
         await user.save()
 
         res.status(200).json(new ApiResponse(200, [], "Password reset successfully"))
-        
+
     } catch (error) {
         res.status(500).json(new ApiError(500, "Server error occured while reseting the password", error))
     }
@@ -275,10 +276,10 @@ const deleteAccount = async (req, res) => {
 
         await User.findByIdAndDelete(userId)
 
-        res.clearCookie("token", {
+        res.cookie("token", null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: isProd ? "strict" : "none"
+            sameSite: isProd ? "strict" : "lax"
         }).status(200).json(new ApiResponse(200, [], "Your Account Deleted Successfully"))
 
     } catch (error) {

@@ -3,9 +3,8 @@ import { ApiError } from '../utils/ApiError.js';
 
 export const userAuth = async(req, res, next) => {
     const {token} = req.cookies;
-
     
-    if (!token) {
+    if (!token || token.includes('null')) {
         return res.status(401).json(new ApiError(401, "Not Authorized. Please Login"))
     }
     

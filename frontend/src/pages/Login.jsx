@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaGithub, FaGoogle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { getAuthStatus, LoginUser, RegisterUser } from "../utils/ApiCalls";
@@ -187,6 +187,26 @@ const Login = () => {
               Signup
             </span>
           </p>
+        )}
+
+        {state === 'Login' && (
+          <div>
+            <div className="text-gray-400 text-center text-shadow-2xs mt-4 flex justify-center items-center w-full">
+              <div className="h-[1px] w-full bg-gray-400 mr-2 mt-1"></div>
+              <div>or</div>
+              <div className="h-[1px] w-full bg-gray-400 ml-2 mt-1"></div>
+            </div>
+            <div className="flex gap-3 justify-center sm:flex-col w-full mt-4">
+              <div className="flex justify-center items-center gap-2 border border-gray-400 rounded-full px-8 py-2.5 cursor-pointer text-lg font-semibold text-gray-200 w-full">
+                <FaGithub size={20}/>
+                <p className="hidden sm:block">Sign in with GitHub</p>
+              </div>
+              <div className="flex justify-center items-center gap-2 border border-gray-400 rounded-full px-8 py-2.5 cursor-pointer bg-gray-200 text-black font-semibold text-lg w-full">
+                <FaGoogle size={20}/>
+                <p className="hidden sm:block">Sign in with Google</p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
