@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { User } from '../models/user.model.js'
-import transporter from "../config/nodeMailer.config.js";
+import transporter from "../config/nodemailer.config.js";
 import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from "../config/email.template.js";
 
 const isProd = process.env.NODE_ENV === 'production'
@@ -47,7 +47,7 @@ const register = async (req, res) => {
         const mailOptions = {
             from: process.env.SMTP_EMAIL,
             to: user.email,
-            subject: 'Welcome to <your_app>',
+            subject: `Welcome to ${appName}`,
             text: `Welcome to ${appName} website. Your account has been created with email id: ${user.email}`
         }
 
