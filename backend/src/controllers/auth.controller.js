@@ -9,7 +9,7 @@ import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from "../config/email.
 const isProd = process.env.NODE_ENV === 'production'
 
 const register = async (req, res) => {
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password, confirmPassword, tokenName, appName } = req.body;
 
     if (!name || !email || !password || !confirmPassword) {
         return res.status(400).json(new ApiError(400, `All fields are required`))
@@ -19,8 +19,12 @@ const register = async (req, res) => {
         return res.status(400).json(new ApiError(400, "Password and Confirm Password should be same"))
     }
 
+    if (!tokenName) {
+        return res.status(400).json(new ApiError(400, "Token name is required"))
+    }
+
     try {
-        const existingUser = await User.findOne({ email })
+        const existingUser = await User.findOne({ email, appName })
 
         if (existingUser) {
             return res.status(400).json(new ApiError(400, `User already exists`))
@@ -28,11 +32,11 @@ const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const user = await User.create({ name, email, password: hashedPassword })
+        const user = await User.create({ name, email, password: hashedPassword, appName })
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
 
-        res.cookie("token", token, {
+        res.cookie(tokenName, token, {
             httpOnly: true,
             secure: isProd,
             sameSite: isProd ? "strict" : "lax",
@@ -44,7 +48,7 @@ const register = async (req, res) => {
             from: process.env.SMTP_EMAIL,
             to: user.email,
             subject: 'Welcome to <your_app>',
-            text: `Welcome to <your_app> website. Your account has been created with email id: ${user.email}`
+            text: `Welcome to ${appName} website. Your account has been created with email id: ${user.email}`
         }
 
         await transporter.sendMail(mailOptions)
@@ -55,14 +59,18 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, tokenName, appName } = req.body;
 
     if (!email || !password) {
         return res.status(400).json(new ApiError(400, "Email and Password is required"))
     }
 
+    if (!tokenName) {
+        return res.status(400).json(new ApiError(400, "Token name is required"))
+    }
+
     try {
-        const user = await User.findOne({ email }, { name: 1, email: 1, password: 1, authType: 1 }).lean()
+        const user = await User.findOne({ email, appName }, { name: 1, email: 1, password: 1, authType: 1 }).lean()
 
         if (!user || user.authType !== 'EMAIL') {
             return res.status(401).json(new ApiError(401, `Invalid email ID`))
@@ -76,9 +84,7 @@ const login = async (req, res) => {
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
 
-        delete user.password
-
-        res.cookie("token", token, {
+        res.cookie(tokenName, token, {
             httpOnly: true,
             secure: isProd,
             sameSite: isProd ? "strict" : "lax",
@@ -90,7 +96,7 @@ const login = async (req, res) => {
             from: process.env.SMTP_EMAIL,
             to: user.email,
             subject: 'Just login from your account',
-            text: `Welcome to <your_app> website. Your account has been login with email id: ${user.email}`
+            text: `Welcome to ${appName} website. Your account has been login with email id: ${user.email}`
         }
 
         await transporter.sendMail(mailOptions)
@@ -103,10 +109,17 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        res.cookie("token", null, {
+        const { tokenName } = req.body
+
+        if (!tokenName) {
+            return res.status(400).json(new ApiError(400, "Token name is required"))
+        }
+
+        res.cookie(tokenName, null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: isProd ? "strict" : "lax"
+            sameSite: isProd ? "strict" : "lax",
+            maxAge: 0
         }).status(200).json(new ApiResponse(200, [], "Logout Successfully"))
 
     } catch (error) {
@@ -118,6 +131,7 @@ const logout = async (req, res) => {
 const sendVerifyOtp = async (req, res) => {
     try {
         const userId = req.userId
+
         const user = await User.findById(userId)
 
         if (user.isVerified) {
@@ -194,13 +208,13 @@ const isAuthenticated = async (req, res) => {
 
 const sendResetOtp = async (req, res) => {
     try {
-        const { email } = req.body
+        const { email, appName } = req.body
 
         if (!email) {
             return res.status(400).json(new ApiError(400, "Email is Required"))
         }
 
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ email, applicationName: appName })
 
         if (!user) {
             return res.status(401).json(new ApiError(401, "User Not Found"))
@@ -230,9 +244,7 @@ const sendResetOtp = async (req, res) => {
 }
 
 const resetPassword = async (req, res) => {
-    const { email, otp, password, confirmPassword } = req.body
-
-    console.log(email, otp, password, confirmPassword)
+    const { email, otp, password, confirmPassword, appName } = req.body
 
     if (!email || !otp || !password || !confirmPassword) {
         return res.status(400).json(new ApiError(400, "All fields are required"))
@@ -243,7 +255,7 @@ const resetPassword = async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ email, appName })
 
         if (!user) {
             return res.status(400).json(new ApiError(400, "User not found"))
@@ -274,12 +286,18 @@ const deleteAccount = async (req, res) => {
     try {
         const userId = req.userId
 
+        const { tokenName } = req.body
+        if (!tokenName) {
+            return res.status(400).json(new ApiError(400, "Token name is required"))
+        }
+
         await User.findByIdAndDelete(userId)
 
-        res.cookie("token", null, {
+        res.cookie(tokenName, null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: isProd ? "strict" : "lax"
+            sameSite: isProd ? "strict" : "lax",
+            maxAge: 0
         }).status(200).json(new ApiResponse(200, [], "Your Account Deleted Successfully"))
 
     } catch (error) {

@@ -14,6 +14,6 @@ authRouter.post('/logout', logout)
 authRouter.post('/verification-otp', userAuth, sendVerifyOtp)
 authRouter.post('/verify-email', userAuth, verifyEmail)
 authRouter.get('/is-auth', userAuth, isAuthenticated)
-authRouter.post('/delete-user', userAuth, deleteAccount)
+authRouter.delete('/delete-user', userAuth, deleteAccount)
 
 export default authRouter

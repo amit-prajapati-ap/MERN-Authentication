@@ -8,7 +8,6 @@ const userSchema = new Schema({
     email: {
         type: String,
         required: true,
-        unique: true
     },
     password: {
         type: String
@@ -37,7 +36,13 @@ const userSchema = new Schema({
         type: String,
         enum: ['EMAIL', 'GOOGLE', 'GITHUB', 'MICROSOFT'],
         default: 'EMAIL'
+    },
+    appName: {
+        type: String,
+        required: true
     }
 })
+
+userSchema.index({ email: 1, appName: 1 }, { unique: true });
 
 export const User = mongoose.models.User || model("User", userSchema)
