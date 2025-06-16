@@ -210,8 +210,8 @@ const sendResetOtp = async (req, res) => {
     try {
         const { email, appName } = req.body
 
-        if (!email) {
-            return res.status(400).json(new ApiError(400, "Email is Required"))
+        if (!email && appName) {
+            return res.status(400).json(new ApiError(400, "Email & App name is required"))
         }
 
         const user = await User.findOne({ email, applicationName: appName })
@@ -286,7 +286,7 @@ const deleteAccount = async (req, res) => {
     try {
         const userId = req.userId
 
-        const { tokenName } = req.body
+        const tokenName = req.headers["x-token-name"];
         if (!tokenName) {
             return res.status(400).json(new ApiError(400, "Token name is required"))
         }
@@ -301,6 +301,7 @@ const deleteAccount = async (req, res) => {
         }).status(200).json(new ApiResponse(200, [], "Your Account Deleted Successfully"))
 
     } catch (error) {
+        console.log("ERROR OCCURRED WHILE DELETING THE ACCOUNT" + error)
         res.status(500).json(new ApiError(500, "Server error occured while deleting the account", error))
     }
 }

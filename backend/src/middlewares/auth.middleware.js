@@ -2,10 +2,11 @@ import jwt from 'jsonwebtoken'
 import { ApiError } from '../utils/ApiError.js';
 
 export const userAuth = async (req, res, next) => {
-    const { tokenName } = req.body
+    const tokenName = req.headers["x-token-name"];
     if (!tokenName) {
-        return res.status(400).json(new ApiError(400, "Token name is required"))
+        return res.status(400).json(new ApiError(400, "Token name is required in headers"))
     }
+
     const token = req.cookies[tokenName];
 
     if (!token || token.includes('null')) {
@@ -17,12 +18,14 @@ export const userAuth = async (req, res, next) => {
 
         if (tokenDecode.id) {
             req.userId = tokenDecode.id
+            
         } else {
             return res.status(401).json(new ApiError(401, "Not Authorized. Login Again"))
         }
 
         next()
     } catch (error) {
+        console.log("ERROR OCCURRED WHILE ACCESSING THE TOKEN" + error)
         res.status(500).json(new ApiError(500, "Server error occured while accessing the token", error))
     }
 }

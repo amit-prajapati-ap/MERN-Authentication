@@ -1,12 +1,12 @@
 import axios from 'axios'
-import {toast} from 'react-toastify'
+import { toast } from 'react-toastify'
 
-export const RegisterUser = async({name, email, password, confirmPassword, backendUrl}) => {
+export const RegisterUser = async ({ name, email, password, confirmPassword, backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-    
-        const {data} = await axios.post(backendUrl + '/api/auth/register', {name, email, password, confirmPassword})
-    
+
+        const { data } = await axios.post(backendUrl + '/api/auth/register', { name, email, password, confirmPassword, tokenName: 'authToken', appName: 'mern-auth' })
+
         if (data.statusCode === 200) {
             toast.success(data.message)
             return data.data
@@ -20,11 +20,12 @@ export const RegisterUser = async({name, email, password, confirmPassword, backe
     }
 }
 
-export const LoginUser = async({email, password, backendUrl}) => {
+export const LoginUser = async ({ email, password, backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.post(backendUrl + '/api/auth/login', {email, password})
-    
+        const { data } = await axios.post(backendUrl + '/api/auth/login', { email, password, tokenName: 'authToken', appName: 'mern-auth' })
+
+        console.log(data)
         if (data.success) {
             toast.success(data.message)
             return data.data
@@ -38,11 +39,15 @@ export const LoginUser = async({email, password, backendUrl}) => {
     }
 }
 
-export const getAuthStatus = async({backendUrl}) => {
+export const getAuthStatus = async ({ backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.get(backendUrl + '/api/auth/is-auth')
-    
+        const { data } = await axios.get(backendUrl + '/api/auth/is-auth', {
+            headers: {
+                'x-token-name': 'authToken'
+            }
+        })
+
         if (data.success) {
             toast.success(data.message)
             return data.data
@@ -56,11 +61,11 @@ export const getAuthStatus = async({backendUrl}) => {
     }
 }
 
-export const logoutUser = async({backendUrl}) => {
+export const logoutUser = async ({ backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.post(backendUrl + '/api/auth/logout')
-    
+        const { data } = await axios.post(backendUrl + '/api/auth/logout', {tokenName: 'authToken'})
+
         if (data.success) {
             toast.success(data.message)
             return true
@@ -74,11 +79,15 @@ export const logoutUser = async({backendUrl}) => {
     }
 }
 
-export const sendVerificationOtp = async({backendUrl}) => {
+export const sendVerificationOtp = async ({ backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.post(backendUrl + '/api/auth/verification-otp')
-    
+        const { data } = await axios.post(backendUrl + '/api/auth/verification-otp', {
+            headers: {
+                'x-token-name': 'authToken'
+            }
+        })
+
         if (data.success) {
             toast.success(data.message)
             return true
@@ -92,11 +101,15 @@ export const sendVerificationOtp = async({backendUrl}) => {
     }
 }
 
-export const verifyEmail = async({backendUrl, otp}) => {
+export const verifyEmail = async ({ backendUrl, otp }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.post(backendUrl + '/api/auth/verify-email', {otp})
-    
+        const { data } = await axios.post(backendUrl + '/api/auth/verify-email', { otp }, {
+            headers: {
+                'x-token-name': 'authToken'
+            }
+        })
+
         if (data.success) {
             toast.success(data.message)
             return true
@@ -110,11 +123,11 @@ export const verifyEmail = async({backendUrl, otp}) => {
     }
 }
 
-export const sendResetPasswordOtp = async({backendUrl, email}) => {
+export const sendResetPasswordOtp = async ({ backendUrl, email }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.post(backendUrl + '/api/auth/send-reset-otp', {email})
-    
+        const { data } = await axios.post(backendUrl + '/api/auth/send-reset-otp', { email })
+
         if (data.success) {
             toast.success(data.message)
             return true
@@ -128,11 +141,11 @@ export const sendResetPasswordOtp = async({backendUrl, email}) => {
     }
 }
 
-export const resetPassword = async({backendUrl, otp, email, password, confirmPassword}) => {
+export const resetPassword = async ({ backendUrl, otp, email, password, confirmPassword }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.post(backendUrl + '/api/auth/reset-password', {otp, email, password, confirmPassword})
-    
+        const { data } = await axios.post(backendUrl + '/api/auth/reset-password', { otp, email, password, confirmPassword })
+
         if (data.success) {
             toast.success(data.message)
             return true
@@ -146,11 +159,15 @@ export const resetPassword = async({backendUrl, otp, email, password, confirmPas
     }
 }
 
-export const deleteAccount = async({backendUrl}) => {
+export const deleteAccount = async ({ backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-        const {data} = await axios.post(backendUrl + '/api/auth/delete-user')
-    
+        const { data } = await axios.delete(backendUrl + '/api/auth/delete-user', {
+            headers: {
+                'x-token-name': 'authToken'
+            }
+        })
+
         if (data.success) {
             toast.success(data.message)
             return true
