@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { resetPassword, sendResetPasswordOtp } from "../utils/ApiCalls";
+import { toast } from "react-toastify";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -42,6 +43,10 @@ const ResetPassword = () => {
 
   const onSubmitEmail = (e) => {
     e.preventDefault();
+    if (email.trim() === "") {
+      toast.error("Please fill all the fields");
+      return
+    }
     sendResetPasswordOtp({ backendUrl, email }).then((res) => {
       if (res) {
         setIsEmailSent(true);
@@ -58,6 +63,10 @@ const ResetPassword = () => {
 
   const onSubmitNewPassword = (e) => {
     e.preventDefault();
+    if (password.trim() === "" || confirmPassword.trim() === "") {
+      toast.error("Please fill all the fields");
+      return
+    }
     resetPassword({ backendUrl, password, email, otp, confirmPassword }).then((res) => {
       if (res) {
         navigate("/login");

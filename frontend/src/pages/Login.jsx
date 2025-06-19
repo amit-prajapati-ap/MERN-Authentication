@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash, FaGithub, FaGoogle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { getAuthStatus, LoginUser, RegisterUser } from "../utils/ApiCalls";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,6 +20,10 @@ const Login = () => {
   const onSubmitHandler = (e) => {
     e.preventDefault();
     if (state === "Login") {
+      if (email.trim() === "" || password.trim() === "") {
+        toast.error("Please fill all the fields");
+        return
+      }
       LoginUser({ email, password, backendUrl }).then((res) => {
         if (res) {
           setIsLoggedIn(true);
@@ -31,6 +36,10 @@ const Login = () => {
         }
       });
     } else {
+      if (name.trim() === "" || email.trim() === "" || password.trim() === "" || confirmPassword.trim() === "") {
+        toast.error("Please fill all the fields");
+        return
+      }
       RegisterUser({ name, email, password, confirmPassword, backendUrl }).then(
         (res) => {
           if (res) {
