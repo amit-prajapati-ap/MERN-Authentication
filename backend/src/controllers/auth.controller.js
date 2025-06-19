@@ -39,7 +39,7 @@ const register = async (req, res) => {
         res.cookie(tokenName, token, {
             httpOnly: true,
             secure: isProd,
-            sameSite: none,
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         }).status(200).json(new ApiResponse(200, [], "Registered Successfully"))
 
@@ -87,7 +87,7 @@ const login = async (req, res) => {
         res.cookie(tokenName, token, {
             httpOnly: true,
             secure: isProd,
-            sameSite: none,
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         }).status(200).json(new ApiResponse(200, [], "Login Successfully"))
 
@@ -118,7 +118,7 @@ const logout = async (req, res) => {
         res.cookie(tokenName, null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: none,
+            sameSite: "none",
             maxAge: 0
         }).status(200).json(new ApiResponse(200, [], "Logout Successfully"))
 
@@ -296,7 +296,7 @@ const deleteAccount = async (req, res) => {
         res.cookie(tokenName, null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: none,
+            sameSite: "none",
             maxAge: 0
         }).status(200).json(new ApiResponse(200, [], "Your Account Deleted Successfully"))
 
