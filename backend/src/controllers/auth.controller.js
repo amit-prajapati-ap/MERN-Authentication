@@ -246,7 +246,7 @@ const sendResetOtp = async (req, res) => {
 const resetPassword = async (req, res) => {
     const { email, otp, password, confirmPassword, appName } = req.body
 
-    if (!email || !otp || !password || !confirmPassword) {
+    if (!email || !otp || !password || !confirmPassword || !appName) {
         return res.status(400).json(new ApiError(400, "All fields are required"))
     }
 
