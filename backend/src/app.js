@@ -5,11 +5,11 @@ import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.routes.js'
 
 const app = express()
-const allowedOrigins = ['http://localhost:5173', '*']
+const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors({credentials: true, origin: allowedOrigins}))
+app.use(cors({credentials: true, origin: allowedOrigins.split(",")}))
 
 app.get('/', (_,res) => {
     res.send("API Working")
