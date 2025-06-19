@@ -64,7 +64,11 @@ export const getAuthStatus = async ({ backendUrl }) => {
 export const logoutUser = async ({ backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-        const { data } = await axios.post(backendUrl + '/api/auth/logout', {tokenName: 'authToken'})
+        const { data } = await axios.post(backendUrl + '/api/auth/logout',{}, {
+            headers: {
+                'x-token-name': 'authToken'
+            }
+        })
 
         if (data.success) {
             toast.success(data.message)
@@ -82,7 +86,7 @@ export const logoutUser = async ({ backendUrl }) => {
 export const sendVerificationOtp = async ({ backendUrl }) => {
     try {
         axios.defaults.withCredentials = true
-        const { data } = await axios.post(backendUrl + '/api/auth/verification-otp', {
+        const { data } = await axios.post(backendUrl + '/api/auth/verification-otp',{}, {
             headers: {
                 'x-token-name': 'authToken'
             }

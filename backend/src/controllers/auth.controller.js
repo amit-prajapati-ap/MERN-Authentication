@@ -109,10 +109,9 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        const { tokenName } = req.body
-
+        const tokenName = req.headers["x-token-name"];
         if (!tokenName) {
-            return res.status(400).json(new ApiError(400, "Token name is required"))
+            return res.status(400).json(new ApiError(400, "Token name is required in headers"))
         }
 
         res.cookie(tokenName, null, {
