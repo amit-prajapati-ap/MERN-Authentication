@@ -39,19 +39,9 @@ const register = async (req, res) => {
         res.cookie(tokenName, token, {
             httpOnly: true,
             secure: isProd,
-            sameSite: "none",
+            sameSite: isProd ? "none" : "lax", // prevent cookie rejection in localhost,
             maxAge: 7 * 24 * 60 * 60 * 1000
         }).status(200).json(new ApiResponse(200, [], "Registered Successfully"))
-
-        //Sending register email
-        const mailOptions = {
-            from: process.env.SMTP_EMAIL,
-            to: user.email,
-            subject: `Welcome to ${appName}`,
-            text: `Welcome to ${appName} website. Your account has been created with email id: ${user.email}`
-        }
-
-        await transporter.sendMail(mailOptions)
 
     } catch (error) {
         res.status(500).json(new ApiError(500, "Server error occured while registering the user", error))
@@ -87,19 +77,9 @@ const login = async (req, res) => {
         res.cookie(tokenName, token, {
             httpOnly: true,
             secure: isProd,
-            sameSite: "none",
+            sameSite: isProd ? "none" : "lax", // prevent cookie rejection in localhost,
             maxAge: 7 * 24 * 60 * 60 * 1000
         }).status(200).json(new ApiResponse(200, [], "Login Successfully"))
-
-        //Sending login email
-        const mailOptions = {
-            from: process.env.SMTP_EMAIL,
-            to: user.email,
-            subject: 'Just login from your account',
-            text: `Welcome to ${appName} website. Your account has been login with email id: ${user.email}`
-        }
-
-        await transporter.sendMail(mailOptions)
 
     } catch (error) {
         console.log(error)
@@ -117,7 +97,7 @@ const logout = async (req, res) => {
         res.cookie(tokenName, null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: "none",
+            sameSite: isProd ? "none" : "lax", // prevent cookie rejection in localhost,
             maxAge: 0
         }).status(200).json(new ApiResponse(200, [], "Logout Successfully"))
 
@@ -295,7 +275,7 @@ const deleteAccount = async (req, res) => {
         res.cookie(tokenName, null, {
             httpOnly: true,
             secure: isProd,
-            sameSite: "none",
+            sameSite: isProd ? "none" : "lax", // prevent cookie rejection in localhost,
             maxAge: 0
         }).status(200).json(new ApiResponse(200, [], "Your Account Deleted Successfully"))
 

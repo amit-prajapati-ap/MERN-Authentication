@@ -7,14 +7,14 @@ import { AppContext } from "../context/AppContext";
 export default function EmailVerify() {
   const navigate = useNavigate();
   const inputRefs = useRef([]);
-  const { backendUrl, setUserData, isLoggedIn, userData } = useContext(AppContext);
+  const { backendUrl, setUserData, isLoggedIn, userData } =
+    useContext(AppContext);
 
   const handleInput = (e, index) => {
-    if (e.target.value.length > 0 && index < inputRefs.current.length - 1) {
-      if (!inputRefs.current[5]) {
-        inputRefs.current[index + 1].focus();
-      } else {
-        inputRefs.current[5].focus();
+    if (e.target.value.length > 0) {
+      const nextIndex = index + 1;
+      if (nextIndex < inputRefs.current.length) {
+        inputRefs.current[nextIndex].focus();
       }
     }
   };
@@ -52,9 +52,8 @@ export default function EmailVerify() {
   };
 
   useEffect(() => {
-    isLoggedIn && userData && userData.isVerified && navigate('/')
-  }, [isLoggedIn, userData])
-  
+    isLoggedIn && userData && userData.isVerified && navigate("/");
+  }, [isLoggedIn, userData]);
 
   return (
     <div className="flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-200 to-purple-400 w-full">
